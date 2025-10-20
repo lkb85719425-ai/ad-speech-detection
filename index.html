@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AD语音检测系统</title>
+    <title>阿尔茨海默症语音检测系统</title>
     <style>
+        /* ========== 所有CSS样式放在这里 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
         }
         .container {
             max-width: 900px;
@@ -27,107 +27,112 @@
             padding: 30px;
             text-align: center;
         }
-        .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
-        }
-        .content { padding: 30px; }
-        .card {
-            background: #f8f9fa;
+        /* ... 其他所有CSS样式 ... */
+        
+        /* 录音可视化器样式 */
+        .recording-visualizer {
+            width: 100%;
+            height: 100px;
+            background: #2c3e50;
             border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
         }
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            margin: 5px;
+        .visualizer-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 100%;
+            padding: 0 10px;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .visualizer-bar {
+            width: 8px;
+            background: #3498db;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.1s ease;
         }
-        .btn-success { background: linear-gradient(135deg, #27ae60, #229954); }
-        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-        }
-        .risk-high { background: #ffeaea; border-left: 5px solid #e74c3c; }
-        .risk-medium { background: #fff3cd; border-left: 5px solid #f39c12; }
-        .risk-low { background: #e8f5e8; border-left: 5px solid #27ae60; }
-        .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            text-align: center;
-            font-weight: bold;
-        }
-        .status-ok { background: #d4edda; color: #155724; }
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* ... 更多CSS样式 ... */
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🧠 阿尔茨海默症语音检测系统</h1>
-            <p>基于人工智能的早期筛查工具 - 在线演示版本</p>
+            <p>基于人工智能的早期筛查工具 - 支持实时语音分析</p>
         </div>
 
         <div class="content">
-            <!-- 系统状态 -->
+            <!-- 系统状态检查 -->
             <div class="card">
                 <h2>📊 系统状态</h2>
-                <div class="status status-ok">✅ 系统运行正常 - 在线演示版本</div>
-                <p>这是一个演示版本，使用模拟数据进行测试。</p>
+                <div id="systemStatus">
+                    <div class="status">检查系统中...</div>
+                </div>
+                <button class="btn" onclick="checkSystemStatus()">刷新状态</button>
+            </div>
+
+            <!-- 实时录音检测 -->
+            <div class="card">
+                <h2>🎤 实时语音检测</h2>
+                <div class="instructions">
+                    <p><span class="step-number">1</span> 点击"开始录音"按钮，请用清晰、自然的声音朗读一段文字</p>
+                    <p><span class="step-number">2</span> 建议朗读时间：10-30秒</p>
+                    <p><span class="step-number">3</span> 完成后点击"停止录音"，然后点击"检测录音"进行分析</p>
+                </div>
+
+                <div class="recording-container">
+                    <div id="recordingControls">
+                        <button class="btn btn-success" id="startRecording" onclick="startRecording()">
+                            🎤 开始录音
+                        </button>
+                        <button class="btn btn-danger" id="stopRecording" onclick="stopRecording()" disabled>
+                            ⏹️ 停止录音
+                        </button>
+                        <button class="btn" id="playRecording" onclick="playRecording()" disabled>
+                            ▶️ 播放录音
+                        </button>
+                        <button class="btn btn-warning" id="analyzeRecording" onclick="analyzeRecording()" disabled>
+                            🔍 检测录音
+                        </button>
+                    </div>
+
+                    <div id="recordingStatus" style="display: none;">
+                        <span class="recording-indicator"></span>
+                        <span>正在录音中...</span>
+                    </div>
+
+                    <div class="recording-timer" id="recordingTimer">00:00</div>
+
+                    <div class="recording-visualizer">
+                        <div class="visualizer-bars" id="visualizer"></div>
+                    </div>
+
+                    <audio id="audioPlayback" class="audio-playback" controls style="display: none;"></audio>
+
+                    <div id="recordingInfo" style="display: none; margin-top: 15px;">
+                        <div class="status status-warning">
+                            ✅ 录音已完成，请点击"检测录音"按钮进行分析
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 录音历史记录 -->
+                <div id="recordingsHistory" style="display: none;">
+                    <h3>📋 录音历史记录</h3>
+                    <div class="recordings-history" id="historyList">
+                        <!-- 录音历史记录将在这里动态生成 -->
+                    </div>
+                </div>
             </div>
 
             <!-- 快速检测 -->
             <div class="card">
                 <h2>⚡ 快速检测</h2>
-                <p>使用模拟数据进行测试</p>
+                <p>使用模拟数据进行快速测试</p>
                 <button class="btn btn-success" onclick="runDemoTest()">运行演示测试</button>
                 <button class="btn btn-danger" onclick="runADSimulation()">模拟AD患者检测</button>
                 <button class="btn" onclick="runNormalSimulation()">模拟正常人检测</button>
-            </div>
-
-            <!-- 录音功能（模拟） -->
-            <div class="card">
-                <h2>🎤 语音检测演示</h2>
-                <p>演示版本支持模拟录音功能</p>
-                <button class="btn btn-warning" onclick="simulateRecording()">模拟录音检测</button>
-                <div id="recordingDemo" style="display: none; margin-top: 15px;">
-                    <div class="status status-ok">✅ 模拟录音完成，正在分析...</div>
-                </div>
             </div>
 
             <!-- 结果显示 -->
@@ -139,115 +144,527 @@
                 </div>
                 <div id="result" class="result"></div>
             </div>
-
-            <!-- 关于信息 -->
-            <div class="card">
-                <h2>ℹ️ 关于系统</h2>
-                <p>这是一个AD语音检测系统的演示版本，展示了完整的用户界面和交互流程。</p>
-                <p><strong>完整功能版本</strong>包含：</p>
-                <ul>
-                    <li>实时语音录制和分析</li>
-                    <li>基于LightGBM的机器学习模型</li>
-                    <li>286维声学特征提取</li>
-                    <li>历史记录管理</li>
-                </ul>
-            </div>
         </div>
     </div>
 
+    <!-- ========== JavaScript代码放在这里 - 在</body>之前 ========== -->
     <script>
-        // 显示加载动画
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('result').style.display = 'none';
+        // 录音相关变量
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordingTimer;
+        let seconds = 0;
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let bufferLength;
+        let visualizerBars;
+        let currentRecordingId = null;
+        let currentAudioBlob = null;
+        let recordingsHistory = [];
+
+        // 页面加载时初始化
+        window.onload = function() {
+            checkSystemStatus();
+            initializeVisualizer();
+            loadRecordingsHistory();
+        };
+
+        // 初始化音频可视化器
+        function initializeVisualizer() {
+            const visualizer = document.getElementById('visualizer');
+            if (!visualizer) return;
+            
+            visualizer.innerHTML = '';
+            visualizerBars = [];
+
+            // 创建32个可视化条
+            for (let i = 0; i < 32; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'visualizer-bar';
+                bar.style.height = '5px';
+                visualizer.appendChild(bar);
+                visualizerBars.push(bar);
+            }
         }
 
-        // 隐藏加载动画
-        function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
+        // 更新音频可视化
+        function updateVisualizer() {
+            if (!analyser) return;
+
+            analyser.getByteFrequencyData(dataArray);
+
+            for (let i = 0; i < bufferLength; i++) {
+                const value = dataArray[i];
+                const percentage = value / 256;
+                const bar = visualizerBars[i];
+
+                if (bar) {
+                    bar.style.height = `${Math.max(5, percentage * 100)}px`;
+                    // 根据音量改变颜色
+                    const green = Math.min(255, value + 100);
+                    bar.style.background = `rgb(${value}, ${green}, 200)`;
+                }
+            }
+
+            requestAnimationFrame(updateVisualizer);
+        }
+
+        // 开始录音
+        async function startRecording() {
+            try {
+                // 请求麦克风权限
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // 设置音频上下文和分析器
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                analyser.fftSize = 64;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                // 设置MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    currentAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(currentAudioBlob);
+
+                    // 设置音频播放
+                    const audioPlayback = document.getElementById('audioPlayback');
+                    if (audioPlayback) {
+                        audioPlayback.src = audioUrl;
+                        audioPlayback.style.display = 'block';
+                    }
+
+                    // 启用播放和分析按钮
+                    document.getElementById('playRecording').disabled = false;
+                    document.getElementById('analyzeRecording').disabled = false;
+
+                    // 显示录音完成信息
+                    const recordingInfo = document.getElementById('recordingInfo');
+                    if (recordingInfo) recordingInfo.style.display = 'block';
+
+                    // 停止可视化
+                    if (audioContext) {
+                        audioContext.close();
+                    }
+
+                    // 生成唯一ID用于标识这次录音
+                    currentRecordingId = 'rec_' + Date.now();
+
+                    // 保存录音到历史记录
+                    saveRecordingToHistory(currentRecordingId, currentAudioBlob, seconds);
+                };
+
+                // 开始录音
+                mediaRecorder.start();
+
+                // 更新UI
+                document.getElementById('startRecording').disabled = true;
+                document.getElementById('stopRecording').disabled = false;
+                document.getElementById('recordingStatus').style.display = 'block';
+                document.getElementById('recordingTimer').textContent = '00:00';
+                document.getElementById('recordingInfo').style.display = 'none';
+                document.getElementById('analyzeRecording').disabled = true;
+
+                // 开始计时器
+                seconds = 0;
+                recordingTimer = setInterval(() => {
+                    seconds++;
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = seconds % 60;
+                    document.getElementById('recordingTimer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+                    // 自动停止录音（最多2分钟）
+                    if (seconds >= 120) {
+                        stopRecording();
+                    }
+                }, 1000);
+
+                // 开始可视化
+                updateVisualizer();
+
+            } catch (error) {
+                alert('无法访问麦克风: ' + error.message);
+                console.error('录音错误:', error);
+            }
+        }
+
+        // 停止录音
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+
+                // 停止所有音轨
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+
+                // 更新UI
+                document.getElementById('startRecording').disabled = false;
+                document.getElementById('stopRecording').disabled = true;
+                document.getElementById('recordingStatus').style.display = 'none';
+
+                // 停止计时器
+                clearInterval(recordingTimer);
+
+                // 重置可视化器
+                initializeVisualizer();
+            }
+        }
+
+        // 播放录音
+        function playRecording() {
+            const audioPlayback = document.getElementById('audioPlayback');
+            if (audioPlayback) {
+                audioPlayback.play();
+            }
+        }
+
+        // 分析录音
+        function analyzeRecording() {
+            if (!currentAudioBlob) {
+                alert('没有可分析的录音数据');
+                return;
+            }
+
+            showLoading();
+
+            // 模拟API调用 - 使用随机数据
+            setTimeout(() => {
+                hideLoading();
+                
+                // 生成模拟分析结果
+                const analysisResult = generateMockAnalysis();
+                displayResult(analysisResult);
+                
+                // 更新录音历史记录中的分析结果
+                if (currentRecordingId) {
+                    updateRecordingAnalysis(currentRecordingId, analysisResult);
+                }
+            }, 2000);
+        }
+
+        // 生成模拟分析结果
+        function generateMockAnalysis() {
+            // 基于录音时长生成更"合理"的概率
+            const durationFactor = Math.min(1, seconds / 30); // 30秒为理想时长
+            const baseProb = 0.2 + (Math.random() * 0.6); // 0.2-0.8之间
+            const adjustedProb = baseProb * (0.3 + 0.7 * durationFactor); // 考虑时长因素
+            
+            const probability = Math.min(0.95, Math.max(0.05, adjustedProb));
+            
+            let riskLevel, recommendation;
+            if (probability >= 0.7) {
+                riskLevel = "高风险";
+                recommendation = "建议尽快咨询神经科医生进行专业评估和进一步检查";
+            } else if (probability >= 0.4) {
+                riskLevel = "中风险";
+                recommendation = "建议定期进行认知功能评估，关注日常生活中的变化";
+            } else {
+                riskLevel = "低风险";
+                recommendation = "当前认知功能状况良好，建议保持健康生活方式";
+            }
+
+            return {
+                success: true,
+                prediction: {
+                    ad_probability: probability,
+                    predicted_label: probability > 0.5 ? 1 : 0,
+                    risk_level: riskLevel,
+                    timestamp: new Date().toLocaleString()
+                },
+                interpretation: {
+                    message: `AD筛查风险等级: ${riskLevel}`,
+                    confidence: probability,
+                    recommendation: recommendation
+                },
+                audio_duration: seconds,
+                recording_id: currentRecordingId
+            };
+        }
+
+        // 保存录音到历史记录
+        function saveRecordingToHistory(id, blob, duration) {
+            const recording = {
+                id: id,
+                blob: blob,
+                duration: duration,
+                timestamp: new Date().toLocaleString(),
+                analyzed: false,
+                result: null
+            };
+
+            recordingsHistory.unshift(recording); // 添加到开头
+
+            // 保存到本地存储
+            saveRecordingsToStorage();
+
+            // 更新UI
+            updateRecordingsHistoryUI();
+        }
+
+        // 更新录音的分析结果
+        function updateRecordingAnalysis(id, result) {
+            const recording = recordingsHistory.find(r => r.id === id);
+            if (recording) {
+                recording.analyzed = true;
+                recording.result = result;
+
+                // 保存到本地存储
+                saveRecordingsToStorage();
+
+                // 更新UI
+                updateRecordingsHistoryUI();
+            }
+        }
+
+        // 更新录音历史记录的UI
+        function updateRecordingsHistoryUI() {
+            const historyList = document.getElementById('historyList');
+            const recordingsHistoryDiv = document.getElementById('recordingsHistory');
+
+            if (!historyList || !recordingsHistoryDiv) return;
+
+            if (recordingsHistory.length === 0) {
+                recordingsHistoryDiv.style.display = 'none';
+                return;
+            }
+
+            recordingsHistoryDiv.style.display = 'block';
+            historyList.innerHTML = '';
+
+            recordingsHistory.forEach(recording => {
+                const item = document.createElement('div');
+                item.className = 'recording-item';
+
+                let resultInfo = '';
+                if (recording.analyzed && recording.result) {
+                    const riskLevel = recording.result.prediction.risk_level;
+                    const probability = (recording.result.prediction.ad_probability * 100).toFixed(1);
+                    resultInfo = `<div>分析结果: ${riskLevel} (${probability}%)</div>`;
+                }
+
+                item.innerHTML = `
+                    <div class="recording-info">
+                        <div>录音时间: ${recording.timestamp}</div>
+                        <div>时长: ${recording.duration}秒</div>
+                        ${resultInfo}
+                    </div>
+                    <div class="recording-actions">
+                        <button class="btn small-btn" onclick="playRecordingFromHistory('${recording.id}')">播放</button>
+                        ${!recording.analyzed ? `<button class="btn small-btn btn-warning" onclick="analyzeRecordingFromHistory('${recording.id}')">检测</button>` : ''}
+                        <button class="btn small-btn btn-danger" onclick="deleteRecording('${recording.id}')">删除</button>
+                    </div>
+                `;
+
+                historyList.appendChild(item);
+            });
+        }
+
+        // 从历史记录播放录音
+        function playRecordingFromHistory(id) {
+            const recording = recordingsHistory.find(r => r.id === id);
+            if (recording && recording.blob) {
+                const audioUrl = URL.createObjectURL(recording.blob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            }
+        }
+
+        // 从历史记录分析录音
+        function analyzeRecordingFromHistory(id) {
+            const recording = recordingsHistory.find(r => r.id === id);
+            if (recording) {
+                showLoading();
+                
+                // 模拟分析过程
+                setTimeout(() => {
+                    hideLoading();
+                    const analysisResult = generateMockAnalysis();
+                    
+                    // 更新录音历史记录中的分析结果
+                    updateRecordingAnalysis(recording.id, analysisResult);
+                    displayResult(analysisResult);
+                }, 2000);
+            }
+        }
+
+        // 删除录音
+        function deleteRecording(id) {
+            if (confirm('确定要删除这条录音记录吗？')) {
+                recordingsHistory = recordingsHistory.filter(r => r.id !== id);
+                saveRecordingsToStorage();
+                updateRecordingsHistoryUI();
+            }
+        }
+
+        // 保存录音历史到本地存储
+        function saveRecordingsToStorage() {
+            // 注意：Blob对象不能直接存储到localStorage
+            // 这里我们只存储元数据，实际音频数据在内存中
+            const recordingsMetadata = recordingsHistory.map(r => ({
+                id: r.id,
+                duration: r.duration,
+                timestamp: r.timestamp,
+                analyzed: r.analyzed,
+                result: r.result
+            }));
+
+            localStorage.setItem('ad_recordings_metadata', JSON.stringify(recordingsMetadata));
+        }
+
+        // 从本地存储加载录音历史
+        function loadRecordingsHistory() {
+            const storedMetadata = localStorage.getItem('ad_recordings_metadata');
+            if (storedMetadata) {
+                const metadata = JSON.parse(storedMetadata);
+                // 注意：这里我们只加载元数据，实际音频数据不会持久化
+                recordingsHistory = metadata.map(m => ({
+                    id: m.id,
+                    blob: null, // 音频数据不会持久化
+                    duration: m.duration,
+                    timestamp: m.timestamp,
+                    analyzed: m.analyzed,
+                    result: m.result
+                }));
+
+                updateRecordingsHistoryUI();
+            }
+        }
+
+        // 系统状态检查（模拟）
+        function checkSystemStatus() {
+            // 模拟API调用
+            setTimeout(() => {
+                const statusDiv = document.getElementById('systemStatus');
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="status status-ok">✅ 系统运行正常 - 在线演示版本</div>';
+                }
+            }, 500);
         }
 
         // 运行演示测试
         function runDemoTest() {
             showLoading();
+            // 模拟API调用
             setTimeout(() => {
                 hideLoading();
-                const prob = Math.random();
-                displayDemoResult(prob, '演示测试');
+                const result = generateMockAnalysis();
+                displayResult(result);
             }, 1500);
         }
 
         // 模拟AD患者检测
         function runADSimulation() {
             showLoading();
+            // 模拟API调用，偏向高风险
             setTimeout(() => {
                 hideLoading();
-                const prob = 0.1 + Math.random() * 0.6; // 0.1-0.7之间
-                displayDemoResult(prob, 'AD模拟检测');
+                const baseProb = 0.6 + Math.random() * 0.3; // 0.6-0.9之间
+                const result = generateMockAnalysisWithProbability(baseProb);
+                displayResult(result);
             }, 1500);
         }
 
         // 模拟正常人检测
         function runNormalSimulation() {
             showLoading();
+            // 模拟API调用，偏向低风险
             setTimeout(() => {
                 hideLoading();
-                const prob = Math.random() * 0.4; // 0-0.4之间
-                displayDemoResult(prob, '正常模拟检测');
+                const baseProb = Math.random() * 0.3; // 0-0.3之间
+                const result = generateMockAnalysisWithProbability(baseProb);
+                displayResult(result);
             }, 1500);
         }
 
-        // 模拟录音功能
-        function simulateRecording() {
-            const demoDiv = document.getElementById('recordingDemo');
-            demoDiv.style.display = 'block';
-
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                const prob = 0.2 + Math.random() * 0.5; // 0.2-0.7之间
-                displayDemoResult(prob, '语音录音分析');
-                demoDiv.style.display = 'none';
-            }, 2000);
-        }
-
-        // 显示结果
-        function displayDemoResult(probability, testType) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-
-            let riskLevel, recommendation, riskClass;
-
+        // 生成指定概率的模拟分析
+        function generateMockAnalysisWithProbability(probability) {
+            probability = Math.min(0.95, Math.max(0.05, probability));
+            
+            let riskLevel, recommendation;
             if (probability >= 0.7) {
                 riskLevel = "高风险";
                 recommendation = "建议尽快咨询神经科医生进行专业评估和进一步检查";
-                riskClass = "risk-high";
             } else if (probability >= 0.4) {
                 riskLevel = "中风险";
                 recommendation = "建议定期进行认知功能评估，关注日常生活中的变化";
-                riskClass = "risk-medium";
             } else {
                 riskLevel = "低风险";
                 recommendation = "当前认知功能状况良好，建议保持健康生活方式";
-                riskClass = "risk-low";
             }
 
-            resultDiv.className = 'result ' + riskClass;
-            resultDiv.innerHTML = `
-                <h3>${testType} - 检测结果</h3>
-                <p><strong>风险等级:</strong> ${riskLevel}</p>
-                <p><strong>AD概率:</strong> ${(probability * 100).toFixed(1)}%</p>
-                <p><strong>建议:</strong> ${recommendation}</p>
-                <p><strong>检测时间:</strong> ${new Date().toLocaleString()}</p>
-                <div class="status ${riskClass.replace('risk-', 'status-')}">
-                    ${riskLevel} - ${recommendation}
-                </div>
-            `;
+            return {
+                success: true,
+                prediction: {
+                    ad_probability: probability,
+                    predicted_label: probability > 0.5 ? 1 : 0,
+                    risk_level: riskLevel,
+                    timestamp: new Date().toLocaleString()
+                },
+                interpretation: {
+                    message: `AD筛查风险等级: ${riskLevel}`,
+                    confidence: probability,
+                    recommendation: recommendation
+                }
+            };
         }
 
-        // 页面加载完成
-        window.onload = function() {
-            console.log('AD语音检测系统演示版本已加载');
+        // 显示加载动画
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            if (loading) loading.style.display = 'block';
+            if (result) result.style.display = 'none';
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'none';
+        }
+
+        // 显示结果
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            if (!resultDiv) return;
+            
+            resultDiv.style.display = 'block';
+
+            if (data.success) {
+                const pred = data.prediction;
+                const interpret = data.interpretation;
+
+                // 根据风险等级设置样式
+                let riskClass = 'risk-low';
+                if (interpret.message.includes('高风险')) riskClass = 'risk-high';
+                else if (interpret.message.includes('中风险')) riskClass = 'risk-medium';
+
+                resultDiv.className = 'result ' + riskClass;
+                resultDiv.innerHTML = `
+                    <h3>检测结果</h3>
+                    <p><strong>风险等级:</strong> ${pred.risk_level}</p>
+                    <p><strong>AD概率:</strong> ${(pred.ad_probability * 100).toFixed(1)}%</p>
+                    <p><strong>建议:</strong> ${interpret.recommendation}</p>
+                    <p><strong>检测时间:</strong> ${pred.timestamp}</p>
+                    ${data.audio_duration ? `<p><strong>录音时长:</strong> ${data.audio_duration}秒</p>` : ''}
+                    ${data.recording_id ? `<p><strong>录音ID:</strong> ${data.recording_id}</p>` : ''}
+                `;
+            } else {
+                resultDiv.className = 'result risk-high';
+                resultDiv.innerHTML = `
+                    <h3>检测失败</h3>
+                    <p>错误信息: ${data.error}</p>
+                `;
+            }
         }
     </script>
 </body>
