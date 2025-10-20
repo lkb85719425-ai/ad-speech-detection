@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AD语音检测系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        .content { padding: 30px; }
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-success { background: linear-gradient(135deg, #27ae60, #229954); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .risk-high { background: #ffeaea; border-left: 5px solid #e74c3c; }
+        .risk-medium { background: #fff3cd; border-left: 5px solid #f39c12; }
+        .risk-low { background: #e8f5e8; border-left: 5px solid #27ae60; }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 阿尔茨海默症语音检测系统</h1>
+            <p>基于人工智能的早期筛查工具 - 在线演示版本</p>
+        </div>
+
+        <div class="content">
+            <!-- 系统状态 -->
+            <div class="card">
+                <h2>📊 系统状态</h2>
+                <div class="status status-ok">✅ 系统运行正常 - 在线演示版本</div>
+                <p>这是一个演示版本，使用模拟数据进行测试。</p>
+            </div>
+
+            <!-- 快速检测 -->
+            <div class="card">
+                <h2>⚡ 快速检测</h2>
+                <p>使用模拟数据进行测试</p>
+                <button class="btn btn-success" onclick="runDemoTest()">运行演示测试</button>
+                <button class="btn btn-danger" onclick="runADSimulation()">模拟AD患者检测</button>
+                <button class="btn" onclick="runNormalSimulation()">模拟正常人检测</button>
+            </div>
+
+            <!-- 录音功能（模拟） -->
+            <div class="card">
+                <h2>🎤 语音检测演示</h2>
+                <p>演示版本支持模拟录音功能</p>
+                <button class="btn btn-warning" onclick="simulateRecording()">模拟录音检测</button>
+                <div id="recordingDemo" style="display: none; margin-top: 15px;">
+                    <div class="status status-ok">✅ 模拟录音完成，正在分析...</div>
+                </div>
+            </div>
+
+            <!-- 结果显示 -->
+            <div class="card">
+                <h2>📈 检测结果</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>分析中，请稍候...</p>
+                </div>
+                <div id="result" class="result"></div>
+            </div>
+
+            <!-- 关于信息 -->
+            <div class="card">
+                <h2>ℹ️ 关于系统</h2>
+                <p>这是一个AD语音检测系统的演示版本，展示了完整的用户界面和交互流程。</p>
+                <p><strong>完整功能版本</strong>包含：</p>
+                <ul>
+                    <li>实时语音录制和分析</li>
+                    <li>基于LightGBM的机器学习模型</li>
+                    <li>286维声学特征提取</li>
+                    <li>历史记录管理</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示加载动画
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 运行演示测试
+        function runDemoTest() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                const prob = Math.random();
+                displayDemoResult(prob, '演示测试');
+            }, 1500);
+        }
+
+        // 模拟AD患者检测
+        function runADSimulation() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                const prob = 0.1 + Math.random() * 0.6; // 0.1-0.7之间
+                displayDemoResult(prob, 'AD模拟检测');
+            }, 1500);
+        }
+
+        // 模拟正常人检测
+        function runNormalSimulation() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                const prob = Math.random() * 0.4; // 0-0.4之间
+                displayDemoResult(prob, '正常模拟检测');
+            }, 1500);
+        }
+
+        // 模拟录音功能
+        function simulateRecording() {
+            const demoDiv = document.getElementById('recordingDemo');
+            demoDiv.style.display = 'block';
+
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                const prob = 0.2 + Math.random() * 0.5; // 0.2-0.7之间
+                displayDemoResult(prob, '语音录音分析');
+                demoDiv.style.display = 'none';
+            }, 2000);
+        }
+
+        // 显示结果
+        function displayDemoResult(probability, testType) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+
+            let riskLevel, recommendation, riskClass;
+
+            if (probability >= 0.7) {
+                riskLevel = "高风险";
+                recommendation = "建议尽快咨询神经科医生进行专业评估和进一步检查";
+                riskClass = "risk-high";
+            } else if (probability >= 0.4) {
+                riskLevel = "中风险";
+                recommendation = "建议定期进行认知功能评估，关注日常生活中的变化";
+                riskClass = "risk-medium";
+            } else {
+                riskLevel = "低风险";
+                recommendation = "当前认知功能状况良好，建议保持健康生活方式";
+                riskClass = "risk-low";
+            }
+
+            resultDiv.className = 'result ' + riskClass;
+            resultDiv.innerHTML = `
+                <h3>${testType} - 检测结果</h3>
+                <p><strong>风险等级:</strong> ${riskLevel}</p>
+                <p><strong>AD概率:</strong> ${(probability * 100).toFixed(1)}%</p>
+                <p><strong>建议:</strong> ${recommendation}</p>
+                <p><strong>检测时间:</strong> ${new Date().toLocaleString()}</p>
+                <div class="status ${riskClass.replace('risk-', 'status-')}">
+                    ${riskLevel} - ${recommendation}
+                </div>
+            `;
+        }
+
+        // 页面加载完成
+        window.onload = function() {
+            console.log('AD语音检测系统演示版本已加载');
+        }
+    </script>
+</body>
+</html>
